@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Run Counter.sol on Anvil and try it in the SwiftUI demo.">
+    <meta name="theme-color" content="#10111b">
+    <title>Counter walkthrough · SolidityBridge Docs</title>
+    <link rel="stylesheet" href="assets/wiki.css">
+    <script defer src="assets/search-index.js"></script>
+    <script defer src="assets/wiki.js"></script>
+</head>
+<body>
+    <a class="skip" href="#main-content">Skip to content</a>
+    <header class="topbar">
+        <div class="topbar-inner">
+            <a class="brand" href="index.html"><span class="brand-icon" aria-hidden="true"><span></span></span><span>SolidityBridge <small>Docs</small></span></a>
+            <div class="topbar-actions">
+                <button type="button" id="search-open" class="search-open" aria-label="Search documentation"><span class="search-icon" aria-hidden="true"></span><span>Search docs</span><kbd>⌘ K</kbd></button>
+                <button type="button" id="nav-toggle" aria-expanded="false" aria-controls="wiki-nav">Menu</button>
+            </div>
+        </div>
+    </header>
+    <div class="shell">
+        <nav class="sidebar" id="wiki-nav" aria-label="Documentation">
+            <a class="overview" href="index.html"><span aria-hidden="true">⌂</span> Overview</a><h2>Get started</h2><ul><li><a href="installation.html">Install the package</a></li><li><a href="counter.html" aria-current="page">Counter walkthrough</a></li></ul><h2>Work with contracts</h2><ul><li><a href="abi.html">ABI and contract calls</a></li><li><a href="bindings.html">Typed Swift bindings</a></li><li><a href="transactions.html">Transactions and wallets</a></li><li><a href="events.html">Events and logs</a></li><li><a href="deployment.html">Deploy a contract</a></li></ul><h2>Reference</h2><ul><li><a href="errors.html">Error handling</a></li><li><a href="testing.html">Testing and troubleshooting</a></li><li><a href="reference.html">API reference</a></li></ul>
+        </nav>
+        <main id="main-content" class="article" tabindex="-1">
+            <div class="eyebrow">Get started</div><h1>Counter walkthrough</h1><p class="intro">Run Counter.sol on Anvil and try it in the SwiftUI demo.</p><div class="prose"><p>From the repository root, start Foundry&#x27;s local node in one terminal:</p>
+<div class="code-panel"><div class="code-bar"><span>Terminal</span><button class="copy" type="button" aria-label="Copy code"><span class="copy-icon" aria-hidden="true"></span><span class="copy-label">Copy</span></button></div><pre tabindex="0"><code>anvil</code></pre></div>
+<p>In another terminal, run:</p>
+<div class="code-panel"><div class="code-bar"><span>Terminal</span><button class="copy" type="button" aria-label="Copy code"><span class="copy-icon" aria-hidden="true"></span><span class="copy-label">Copy</span></button></div><pre tabindex="0"><code>forge build --contracts Examples
+forge create --broadcast --rpc-url http://127.0.0.1:8545 --unlocked \
+  --from 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 Examples/Counter.sol:Counter</code></pre></div>
+<h2 id="open-the-demo">Open the demo</h2><p>Copy the contract address printed by Foundry. In <a href="counter.html#open-the-demo">the SwiftUI demo</a>, enter that address, chain ID <code>31337</code>, and a simulator-reachable endpoint such as <code>http://localhost:8545</code>. For a physical device, configure a reachable endpoint and the applicable local-network and transport settings. The demo bundles the ABI and generated binding for <a href="examples/Counter.sol">Counter.sol</a>.</p>
+<p>On a fresh deployment, <strong>Read value</strong> returns 0. <strong>Simulate write</strong> with 42 succeeds, and the next read still returns 0. Simulating 101 reports <code>TooHigh(uint256)</code>. The demo exercises reads and simulation. The opt-in integration test also deploys and sends an actual transaction on Anvil.</p>
+<p>For Sepolia, use an HTTPS endpoint, chain ID <code>11155111</code>, and the address of a <code>Counter</code> deployment on Sepolia.</p></div><nav class="pager" aria-label="Adjacent topics"><a class="pager-previous" href="installation.html"><span>Previous</span><strong>Install the package</strong></a><a class="pager-next" href="abi.html"><span>Next</span><strong>ABI and contract calls</strong></a></nav>
+            <footer>SolidityBridge documentation <span>Swift 6 · iOS 16+ · macOS 13+</span></footer>
+        </main>
+        <aside class="outline"><nav aria-label="On this page"><h2>On this page</h2><ul><li><a href="#open-the-demo">Open the demo</a></li></ul></nav></aside>
+    </div>
+    <dialog id="search-dialog" aria-labelledby="search-title">
+        <div class="dialog-header">
+            <h2 id="search-title">Search documentation</h2>
+            <form method="dialog"><button type="submit" aria-label="Close search">Close</button></form>
+        </div>
+        <label class="search-field"><span class="search-icon" aria-hidden="true"></span><input id="search-input" type="search" placeholder="Try wallets, events, or UInt256" autocomplete="off" aria-label="Search documentation"></label>
+        <p id="search-status" class="search-status" aria-live="polite">Browse topics</p>
+        <ul id="search-results" class="search-results"></ul>
+        <div class="dialog-hint">Use <kbd>↑</kbd> <kbd>↓</kbd> to select and <kbd>Enter</kbd> to open.</div>
+    </dialog>
+    <div id="copy-status" class="visually-hidden" role="status"></div>
+</body>
+</html>

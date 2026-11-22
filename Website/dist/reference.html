@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Find public types, protocols, and entry points.">
+    <meta name="theme-color" content="#10111b">
+    <title>API reference · SolidityBridge Docs</title>
+    <link rel="stylesheet" href="assets/wiki.css">
+    <script defer src="assets/search-index.js"></script>
+    <script defer src="assets/wiki.js"></script>
+</head>
+<body>
+    <a class="skip" href="#main-content">Skip to content</a>
+    <header class="topbar">
+        <div class="topbar-inner">
+            <a class="brand" href="index.html"><span class="brand-icon" aria-hidden="true"><span></span></span><span>SolidityBridge <small>Docs</small></span></a>
+            <div class="topbar-actions">
+                <button type="button" id="search-open" class="search-open" aria-label="Search documentation"><span class="search-icon" aria-hidden="true"></span><span>Search docs</span><kbd>⌘ K</kbd></button>
+                <button type="button" id="nav-toggle" aria-expanded="false" aria-controls="wiki-nav">Menu</button>
+            </div>
+        </div>
+    </header>
+    <div class="shell">
+        <nav class="sidebar" id="wiki-nav" aria-label="Documentation">
+            <a class="overview" href="index.html"><span aria-hidden="true">⌂</span> Overview</a><h2>Get started</h2><ul><li><a href="installation.html">Install the package</a></li><li><a href="counter.html">Counter walkthrough</a></li></ul><h2>Work with contracts</h2><ul><li><a href="abi.html">ABI and contract calls</a></li><li><a href="bindings.html">Typed Swift bindings</a></li><li><a href="transactions.html">Transactions and wallets</a></li><li><a href="events.html">Events and logs</a></li><li><a href="deployment.html">Deploy a contract</a></li></ul><h2>Reference</h2><ul><li><a href="errors.html">Error handling</a></li><li><a href="testing.html">Testing and troubleshooting</a></li><li><a href="reference.html" aria-current="page">API reference</a></li></ul>
+        </nav>
+        <main id="main-content" class="article" tabindex="-1">
+            <div class="eyebrow">Reference</div><h1>API reference</h1><p class="intro">Find public types, protocols, and entry points.</p><div class="prose"><div class="table-scroll" tabindex="0"><table><thead><tr><th>Type</th><th>Public entry points and purpose</th></tr></thead><tbody><tr><td><code>EthereumClient</code></td><td><code>init(chainID:rpcURL:headers:)</code> or <code>init(chainID:transport:)</code>, <code>contract(at:abi:)</code>, <code>verifyChain()</code>, <code>blockNumber()</code>, <code>receipt(for:)</code>, <code>waitForReceipt</code>, <code>prepareDeployment</code>, and both <code>deploy</code> overloads.</td></tr><tr><td><code>EthereumContract</code></td><td><code>address</code>, <code>abi</code>, <code>read</code>, <code>simulate</code>, <code>estimateGas</code>, <code>prepareTransaction</code>, <code>send</code>, <code>execute</code>, <code>logs</code>, <code>logPages</code>, <code>watchLogs</code>, and <code>decodeLog(_:as:)</code>.</td></tr><tr><td><code>ContractABI</code>, <code>ContractArtifact</code></td><td>Decode JSON. The ABI exposes signature lists. The artifact also exposes creation bytecode.</td></tr><tr><td><code>ABIValue</code>, <code>BlockTag</code></td><td>Supply typed ABI values and select a block context.</td></tr><tr><td><code>EthereumAddress</code>, <code>Hash32</code>, <code>TransactionHash</code>, <code>UInt256</code>, <code>Int256</code></td><td>Represent Ethereum primitives. <code>TransactionHash</code> is a typealias of <code>Hash32</code>. <code>UInt256.hex</code> is a compact RPC quantity, while <code>bytes</code> is the full-width word.</td></tr><tr><td><code>TransactionOptions</code>, <code>EIP1559Transaction</code>, <code>EthereumSignature</code></td><td>Configure value, gas, and fees. Inspect unsigned fields and access the signing payload and digest. Represent recoverable signature components.</td></tr><tr><td><code>TransactionReceipt</code>, <code>EthereumLog</code>, <code>ContractEvent</code>, <code>ContractRevert</code></td><td>Inspect mined status, raw events, decoded events, and decoded revert payloads.</td></tr><tr><td><code>EventTopic</code>, <code>EventTopicFilter</code>, <code>EventWatchOptions</code></td><td>Configure indexed event filters, page size, confirmation depth, poll interval, and retry limit.</td></tr><tr><td><code>EventPages</code>, <code>EventWatch</code>, <code>ContractEventPage</code></td><td>Consume history or ongoing updates as async sequences of inclusive block ranges and decoded events.</td></tr><tr><td><code>EthereumSigner</code>, <code>ExternalWalletSession</code>, <code>ExternalWallet</code>, <code>WalletTransactionRequest</code>, <code>TransactionState</code></td><td>Connect signing or wallet software and observe transaction progress.</td></tr><tr><td><code>RPCTransport</code>, <code>HTTPTransport</code>, <code>RPCError</code></td><td>Inject an RPC transport, configure HTTP behavior, and inspect node errors.</td></tr><tr><td><code>LocalEthereumSigner</code></td><td>The optional <code>SolidityBridgeLocalWallet</code> product provides in-process secp256k1 signing.</td></tr><tr><td><code>soliditybridge-bindings</code></td><td>The command-line product generates Swift source from a contract ABI or artifact.</td></tr></tbody></table></div></div><nav class="pager" aria-label="Adjacent topics"><a class="pager-previous" href="testing.html"><span>Previous</span><strong>Testing and troubleshooting</strong></a></nav>
+            <footer>SolidityBridge documentation <span>Swift 6 · iOS 16+ · macOS 13+</span></footer>
+        </main>
+
+    </div>
+    <dialog id="search-dialog" aria-labelledby="search-title">
+        <div class="dialog-header">
+            <h2 id="search-title">Search documentation</h2>
+            <form method="dialog"><button type="submit" aria-label="Close search">Close</button></form>
+        </div>
+        <label class="search-field"><span class="search-icon" aria-hidden="true"></span><input id="search-input" type="search" placeholder="Try wallets, events, or UInt256" autocomplete="off" aria-label="Search documentation"></label>
+        <p id="search-status" class="search-status" aria-live="polite">Browse topics</p>
+        <ul id="search-results" class="search-results"></ul>
+        <div class="dialog-hint">Use <kbd>↑</kbd> <kbd>↓</kbd> to select and <kbd>Enter</kbd> to open.</div>
+    </dialog>
+    <div id="copy-status" class="visually-hidden" role="status"></div>
+</body>
+</html>

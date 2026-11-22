@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Submit creation bytecode and retrieve the deployed address.">
+    <meta name="theme-color" content="#10111b">
+    <title>Deploy a contract · SolidityBridge Docs</title>
+    <link rel="stylesheet" href="assets/wiki.css">
+    <script defer src="assets/search-index.js"></script>
+    <script defer src="assets/wiki.js"></script>
+</head>
+<body>
+    <a class="skip" href="#main-content">Skip to content</a>
+    <header class="topbar">
+        <div class="topbar-inner">
+            <a class="brand" href="index.html"><span class="brand-icon" aria-hidden="true"><span></span></span><span>SolidityBridge <small>Docs</small></span></a>
+            <div class="topbar-actions">
+                <button type="button" id="search-open" class="search-open" aria-label="Search documentation"><span class="search-icon" aria-hidden="true"></span><span>Search docs</span><kbd>⌘ K</kbd></button>
+                <button type="button" id="nav-toggle" aria-expanded="false" aria-controls="wiki-nav">Menu</button>
+            </div>
+        </div>
+    </header>
+    <div class="shell">
+        <nav class="sidebar" id="wiki-nav" aria-label="Documentation">
+            <a class="overview" href="index.html"><span aria-hidden="true">⌂</span> Overview</a><h2>Get started</h2><ul><li><a href="installation.html">Install the package</a></li><li><a href="counter.html">Counter walkthrough</a></li></ul><h2>Work with contracts</h2><ul><li><a href="abi.html">ABI and contract calls</a></li><li><a href="bindings.html">Typed Swift bindings</a></li><li><a href="transactions.html">Transactions and wallets</a></li><li><a href="events.html">Events and logs</a></li><li><a href="deployment.html" aria-current="page">Deploy a contract</a></li></ul><h2>Reference</h2><ul><li><a href="errors.html">Error handling</a></li><li><a href="testing.html">Testing and troubleshooting</a></li><li><a href="reference.html">API reference</a></li></ul>
+        </nav>
+        <main id="main-content" class="article" tabindex="-1">
+            <div class="eyebrow">Work with contracts</div><h1>Deploy a contract</h1><p class="intro">Submit creation bytecode and retrieve the deployed address.</p><div class="prose"><p><code>ContractArtifact(json:)</code> accepts Foundry&#x27;s <code>bytecode.object</code> or Hardhat&#x27;s <code>bytecode</code> string. Supply the creation artifact with linked bytecode and the constructor ABI. Pass constructor arguments in ABI order. A nonpayable or implicit constructor accepts zero attached value.</p>
+<div class="code-panel"><div class="code-bar"><span>Swift</span><button class="copy" type="button" aria-label="Copy code"><span class="copy-icon" aria-hidden="true"></span><span class="copy-label">Copy</span></button></div><pre tabindex="0"><code><span class="syntax-keyword">let</span> artifact = <span class="syntax-keyword">try</span> <span class="syntax-type">ContractArtifact</span>(json: <span class="syntax-type">Data</span>(contentsOf: artifactURL))
+<span class="syntax-keyword">let</span> hash = <span class="syntax-keyword">try</span> <span class="syntax-keyword">await</span> client.deploy(artifact, signer: signer)
+<span class="syntax-keyword">let</span> receipt = <span class="syntax-keyword">try</span> <span class="syntax-keyword">await</span> client.waitForReceipt(<span class="syntax-keyword">for</span>: hash)
+<span class="syntax-keyword">guard</span> receipt.succeeded <span class="syntax-keyword">else</span> { <span class="syntax-keyword">throw</span> <span class="syntax-type">WalletError</span>.transactionReverted(hash) }
+<span class="syntax-keyword">guard</span> <span class="syntax-keyword">let</span> address = receipt.contractAddress <span class="syntax-keyword">else</span> {
+    <span class="syntax-keyword">throw</span> <span class="syntax-type">SolidityBridgeError</span>.invalidRPCResponse
+}
+<span class="syntax-keyword">let</span> deployed = client.contract(at: address, abi: artifact.abi)</code></pre></div>
+<p>Use <code>arguments: [.uint(UInt256(42))]</code> for a constructor that takes one unsigned integer, or use <code>wallet:</code> to deploy through an external wallet. <code>prepareDeployment</code> gives you an unsigned transaction for inspection. Its destination is <code>nil</code>, and its calldata contains creation bytecode followed by ABI-encoded constructor arguments.</p></div><nav class="pager" aria-label="Adjacent topics"><a class="pager-previous" href="events.html"><span>Previous</span><strong>Events and logs</strong></a><a class="pager-next" href="errors.html"><span>Next</span><strong>Error handling</strong></a></nav>
+            <footer>SolidityBridge documentation <span>Swift 6 · iOS 16+ · macOS 13+</span></footer>
+        </main>
+
+    </div>
+    <dialog id="search-dialog" aria-labelledby="search-title">
+        <div class="dialog-header">
+            <h2 id="search-title">Search documentation</h2>
+            <form method="dialog"><button type="submit" aria-label="Close search">Close</button></form>
+        </div>
+        <label class="search-field"><span class="search-icon" aria-hidden="true"></span><input id="search-input" type="search" placeholder="Try wallets, events, or UInt256" autocomplete="off" aria-label="Search documentation"></label>
+        <p id="search-status" class="search-status" aria-live="polite">Browse topics</p>
+        <ul id="search-results" class="search-results"></ul>
+        <div class="dialog-hint">Use <kbd>↑</kbd> <kbd>↓</kbd> to select and <kbd>Enter</kbd> to open.</div>
+    </dialog>
+    <div id="copy-status" class="visually-hidden" role="status"></div>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Read state, simulate calls, and map Solidity types to Swift.">
+    <meta name="theme-color" content="#10111b">
+    <title>ABI and contract calls · SolidityBridge Docs</title>
+    <link rel="stylesheet" href="assets/wiki.css">
+    <script defer src="assets/search-index.js"></script>
+    <script defer src="assets/wiki.js"></script>
+</head>
+<body>
+    <a class="skip" href="#main-content">Skip to content</a>
+    <header class="topbar">
+        <div class="topbar-inner">
+            <a class="brand" href="index.html"><span class="brand-icon" aria-hidden="true"><span></span></span><span>SolidityBridge <small>Docs</small></span></a>
+            <div class="topbar-actions">
+                <button type="button" id="search-open" class="search-open" aria-label="Search documentation"><span class="search-icon" aria-hidden="true"></span><span>Search docs</span><kbd>⌘ K</kbd></button>
+                <button type="button" id="nav-toggle" aria-expanded="false" aria-controls="wiki-nav">Menu</button>
+            </div>
+        </div>
+    </header>
+    <div class="shell">
+        <nav class="sidebar" id="wiki-nav" aria-label="Documentation">
+            <a class="overview" href="index.html"><span aria-hidden="true">⌂</span> Overview</a><h2>Get started</h2><ul><li><a href="installation.html">Install the package</a></li><li><a href="counter.html">Counter walkthrough</a></li></ul><h2>Work with contracts</h2><ul><li><a href="abi.html" aria-current="page">ABI and contract calls</a></li><li><a href="bindings.html">Typed Swift bindings</a></li><li><a href="transactions.html">Transactions and wallets</a></li><li><a href="events.html">Events and logs</a></li><li><a href="deployment.html">Deploy a contract</a></li></ul><h2>Reference</h2><ul><li><a href="errors.html">Error handling</a></li><li><a href="testing.html">Testing and troubleshooting</a></li><li><a href="reference.html">API reference</a></li></ul>
+        </nav>
+        <main id="main-content" class="article" tabindex="-1">
+            <div class="eyebrow">Work with contracts</div><h1>ABI and contract calls</h1><p class="intro">Read state, simulate calls, and map Solidity types to Swift.</p><div class="prose"><p>With an <code>EthereumContract</code> from <code>connect</code>:</p>
+<div class="code-panel"><div class="code-bar"><span>Swift</span><button class="copy" type="button" aria-label="Copy code"><span class="copy-icon" aria-hidden="true"></span><span class="copy-label">Copy</span></button></div><pre tabindex="0"><code><span class="syntax-keyword">let</span> result = <span class="syntax-keyword">try</span> <span class="syntax-keyword">await</span> contract.read(<span class="syntax-string">&quot;value()&quot;</span>, at: .latest)
+<span class="syntax-keyword">guard</span> <span class="syntax-keyword">case</span> .uint(<span class="syntax-keyword">let</span> value)? = result.first <span class="syntax-keyword">else</span> {
+    <span class="syntax-keyword">throw</span> <span class="syntax-type">SolidityBridgeError</span>.malformedABIData
+}
+
+<span class="syntax-keyword">let</span> arguments: [<span class="syntax-type">ABIValue</span>] = [.uint(<span class="syntax-type">UInt256</span>(<span class="syntax-number">42</span>))]
+_ = <span class="syntax-keyword">try</span> <span class="syntax-keyword">await</span> contract.simulate(<span class="syntax-string">&quot;set(uint256)&quot;</span>, arguments: arguments)
+<span class="syntax-keyword">let</span> estimatedGas = <span class="syntax-keyword">try</span> <span class="syntax-keyword">await</span> contract.estimateGas(
+    <span class="syntax-string">&quot;set(uint256)&quot;</span>, arguments: arguments, from: sender
+)</code></pre></div>
+<p><code>read</code> and <code>simulate</code> both use <code>eth_call</code>. Call <code>simulate</code> when you need an explicit <code>value</code>, expressed in wei. Provide <code>from</code> when the result depends on <code>msg.sender</code>, such as for access control or account-specific balances. Supported block selectors are <code>.latest</code>, <code>.pending</code>, <code>.safe</code>, <code>.finalized</code>, <code>.earliest</code>, and <code>.number(UInt64)</code>. Historical reads and some block tags depend on the provider&#x27;s state retention and tag support. Simulated success reflects the state used for the call. State can change before a transaction is mined.</p>
+<p>Resolve a uniquely named function by name. For an overloaded function, provide the canonical signature, including explicit integer widths and tuple syntax. For example, a tuple-array parameter can give the signature <code>save((address,uint256)[])</code>. The ABI exposes <code>functionSignatures</code> and <code>eventSignatures</code> to help with discovery.</p>
+<div class="table-scroll" tabindex="0"><table><thead><tr><th>Solidity ABI type</th><th>Pass as an <code>ABIValue</code></th></tr></thead><tbody><tr><td><code>address</code></td><td><code>.address(EthereumAddress)</code></td></tr><tr><td><code>bool</code></td><td><code>.bool(Bool)</code></td></tr><tr><td><code>uint8…uint256</code></td><td><code>.uint(UInt256)</code></td></tr><tr><td><code>int8…int256</code></td><td><code>.int(Int256)</code></td></tr><tr><td><code>bytes1…bytes32</code></td><td><code>.fixedBytes(Data)</code></td></tr><tr><td><code>bytes</code> and <code>string</code></td><td><code>.bytes(Data)</code> and <code>.string(String)</code></td></tr><tr><td>Fixed and dynamic arrays</td><td><code>.array([ABIValue])</code></td></tr><tr><td>Tuples and structs represented as tuples</td><td><code>.tuple([ABIValue])</code> in ABI component order</td></tr></tbody></table></div>
+<p><code>UInt256(decimal:)</code> and <code>Int256(decimal:)</code> preserve full integer precision. For example, <code>try UInt256(decimal: &quot;1000000000000000000&quot;)</code> represents 1 ETH in wei. <code>uint64</code> is optional because a 256-bit value may exceed <code>UInt64.max</code>. The codec checks the width of ABI integers and lengths of fixed bytes and arrays. The decoder expects Solidity&#x27;s canonical encoding, including its padding and offsets. Fixed-point types and function pointers are unsupported. See the <a href="https://docs.soliditylang.org/en/latest/abi-spec.html">Solidity ABI specification</a>.</p></div><nav class="pager" aria-label="Adjacent topics"><a class="pager-previous" href="counter.html"><span>Previous</span><strong>Counter walkthrough</strong></a><a class="pager-next" href="bindings.html"><span>Next</span><strong>Typed Swift bindings</strong></a></nav>
+            <footer>SolidityBridge documentation <span>Swift 6 · iOS 16+ · macOS 13+</span></footer>
+        </main>
+
+    </div>
+    <dialog id="search-dialog" aria-labelledby="search-title">
+        <div class="dialog-header">
+            <h2 id="search-title">Search documentation</h2>
+            <form method="dialog"><button type="submit" aria-label="Close search">Close</button></form>
+        </div>
+        <label class="search-field"><span class="search-icon" aria-hidden="true"></span><input id="search-input" type="search" placeholder="Try wallets, events, or UInt256" autocomplete="off" aria-label="Search documentation"></label>
+        <p id="search-status" class="search-status" aria-live="polite">Browse topics</p>
+        <ul id="search-results" class="search-results"></ul>
+        <div class="dialog-hint">Use <kbd>↑</kbd> <kbd>↓</kbd> to select and <kbd>Enter</kbd> to open.</div>
+    </dialog>
+    <div id="copy-status" class="visually-hidden" role="status"></div>
+</body>
+</html>

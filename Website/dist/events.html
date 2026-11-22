@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Filter, page, and watch contract events across blocks.">
+    <meta name="theme-color" content="#10111b">
+    <title>Events and logs · SolidityBridge Docs</title>
+    <link rel="stylesheet" href="assets/wiki.css">
+    <script defer src="assets/search-index.js"></script>
+    <script defer src="assets/wiki.js"></script>
+</head>
+<body>
+    <a class="skip" href="#main-content">Skip to content</a>
+    <header class="topbar">
+        <div class="topbar-inner">
+            <a class="brand" href="index.html"><span class="brand-icon" aria-hidden="true"><span></span></span><span>SolidityBridge <small>Docs</small></span></a>
+            <div class="topbar-actions">
+                <button type="button" id="search-open" class="search-open" aria-label="Search documentation"><span class="search-icon" aria-hidden="true"></span><span>Search docs</span><kbd>⌘ K</kbd></button>
+                <button type="button" id="nav-toggle" aria-expanded="false" aria-controls="wiki-nav">Menu</button>
+            </div>
+        </div>
+    </header>
+    <div class="shell">
+        <nav class="sidebar" id="wiki-nav" aria-label="Documentation">
+            <a class="overview" href="index.html"><span aria-hidden="true">⌂</span> Overview</a><h2>Get started</h2><ul><li><a href="installation.html">Install the package</a></li><li><a href="counter.html">Counter walkthrough</a></li></ul><h2>Work with contracts</h2><ul><li><a href="abi.html">ABI and contract calls</a></li><li><a href="bindings.html">Typed Swift bindings</a></li><li><a href="transactions.html">Transactions and wallets</a></li><li><a href="events.html" aria-current="page">Events and logs</a></li><li><a href="deployment.html">Deploy a contract</a></li></ul><h2>Reference</h2><ul><li><a href="errors.html">Error handling</a></li><li><a href="testing.html">Testing and troubleshooting</a></li><li><a href="reference.html">API reference</a></li></ul>
+        </nav>
+        <main id="main-content" class="article" tabindex="-1">
+            <div class="eyebrow">Work with contracts</div><h1>Events and logs</h1><p class="intro">Filter, page, and watch contract events across blocks.</p><div class="prose"><p>A <code>ContractEvent</code> exposes its signature, ordered arguments, and original <code>EthereumLog</code>. Use <code>decodeLog(_:as:)</code> on a receipt log from the relevant contract and event. A receipt can contain several unrelated logs. For non-anonymous events the first topic is the Keccak-256 hash of the event signature. Indexed scalar values can be decoded from their topics. An indexed string, dynamic bytes value, array, or tuple is available as <code>.indexedHash</code>, since the log contains only its hash. Anonymous events can be decoded from known logs by name or signature. Contract event queries require a non-anonymous event. See the <a href="https://docs.soliditylang.org/en/latest/abi-spec.html#events">Solidity event ABI</a>.</p>
+<div class="code-panel"><div class="code-bar"><span>Swift</span><button class="copy" type="button" aria-label="Copy code"><span class="copy-icon" aria-hidden="true"></span><span class="copy-label">Copy</span></button></div><pre tabindex="0"><code><span class="syntax-keyword">let</span> filter: [<span class="syntax-type">EventTopicFilter</span>] = [.<span class="syntax-keyword">any</span>, .one(.value(.string(<span class="syntax-string">&quot;checkpoint&quot;</span>)))]
+<span class="syntax-keyword">let</span> events = <span class="syntax-keyword">try</span> <span class="syntax-keyword">await</span> contract.logs(
+    <span class="syntax-string">&quot;Updated(address,string,uint256)&quot;</span>,
+    from: .number(<span class="syntax-number">1</span>), to: .number(<span class="syntax-number">100</span>), indexed: filter
+)</code></pre></div>
+<p>Filter positions follow the order of indexed arguments. Use <code>.any</code> for a wildcard, <code>.anyOf([...])</code> for alternatives at one position, and <code>.hash</code> for a precomputed topic. A <code>.value</code> is encoded using the event field&#x27;s ABI type, including Solidity&#x27;s special hashing where applicable.</p>
+<p>Use <code>logPages</code> for large ranges. Each page represents an inclusive block range, even if it has no events:</p>
+<div class="code-panel"><div class="code-bar"><span>Swift</span><button class="copy" type="button" aria-label="Copy code"><span class="copy-icon" aria-hidden="true"></span><span class="copy-label">Copy</span></button></div><pre tabindex="0"><code><span class="syntax-keyword">let</span> pages = <span class="syntax-keyword">try</span> contract.logPages(
+    <span class="syntax-string">&quot;Updated&quot;</span>, blocks: <span class="syntax-number">1</span>...<span class="syntax-number">10_000</span>, pageSize: <span class="syntax-number">250</span>, indexed: filter
+)
+<span class="syntax-keyword">for</span> <span class="syntax-keyword">try</span> <span class="syntax-keyword">await</span> page <span class="syntax-keyword">in</span> pages {
+    print(page.blocks, page.events.count)
+}</code></pre></div>
+<p>Use <code>watchLogs</code> to continue from a starting block, catch up, and poll for new blocks:</p>
+<div class="code-panel"><div class="code-bar"><span>Swift</span><button class="copy" type="button" aria-label="Copy code"><span class="copy-icon" aria-hidden="true"></span><span class="copy-label">Copy</span></button></div><pre tabindex="0"><code><span class="syntax-keyword">let</span> watch = <span class="syntax-keyword">try</span> contract.watchLogs(
+    <span class="syntax-string">&quot;Updated&quot;</span>, from: nextBlock, indexed: filter,
+    options: .<span class="syntax-keyword">init</span>(
+        pageSize: <span class="syntax-number">250</span>, confirmations: <span class="syntax-number">3</span>,
+        pollInterval: .seconds(<span class="syntax-number">3</span>), reconnectAttempts: <span class="syntax-number">5</span>
+    )
+)
+<span class="syntax-keyword">for</span> <span class="syntax-keyword">try</span> <span class="syntax-keyword">await</span> page <span class="syntax-keyword">in</span> watch {
+    print(page.blocks, page.events.count)
+}</code></pre></div>
+<p>The watch uses HTTP polling and retries the same unprocessed range after a recognized transient error. A new iterator starts from the supplied block. Persist the next block only after you apply a page, and make replay idempotent. When available, use chain ID, block hash, transaction hash, and log index to identify events. If the last delivered checkpoint changes, <code>.reorganizationDetected(lastDeliveredBlock:)</code> ends the iteration. Reconcile affected application records and create a new watch from a previously verified block. The error gives the last delivered height. You determine how far back the chains diverged. Cancel the consuming task when its owner no longer needs the stream.</p></div><nav class="pager" aria-label="Adjacent topics"><a class="pager-previous" href="transactions.html"><span>Previous</span><strong>Transactions and wallets</strong></a><a class="pager-next" href="deployment.html"><span>Next</span><strong>Deploy a contract</strong></a></nav>
+            <footer>SolidityBridge documentation <span>Swift 6 · iOS 16+ · macOS 13+</span></footer>
+        </main>
+
+    </div>
+    <dialog id="search-dialog" aria-labelledby="search-title">
+        <div class="dialog-header">
+            <h2 id="search-title">Search documentation</h2>
+            <form method="dialog"><button type="submit" aria-label="Close search">Close</button></form>
+        </div>
+        <label class="search-field"><span class="search-icon" aria-hidden="true"></span><input id="search-input" type="search" placeholder="Try wallets, events, or UInt256" autocomplete="off" aria-label="Search documentation"></label>
+        <p id="search-status" class="search-status" aria-live="polite">Browse topics</p>
+        <ul id="search-results" class="search-results"></ul>
+        <div class="dialog-hint">Use <kbd>↑</kbd> <kbd>↓</kbd> to select and <kbd>Enter</kbd> to open.</div>
+    </dialog>
+    <div id="copy-status" class="visually-hidden" role="status"></div>
+</body>
+</html>

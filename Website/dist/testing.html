@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Test with a mock transport, run Anvil, and debug integrations.">
+    <meta name="theme-color" content="#10111b">
+    <title>Testing and troubleshooting · SolidityBridge Docs</title>
+    <link rel="stylesheet" href="assets/wiki.css">
+    <script defer src="assets/search-index.js"></script>
+    <script defer src="assets/wiki.js"></script>
+</head>
+<body>
+    <a class="skip" href="#main-content">Skip to content</a>
+    <header class="topbar">
+        <div class="topbar-inner">
+            <a class="brand" href="index.html"><span class="brand-icon" aria-hidden="true"><span></span></span><span>SolidityBridge <small>Docs</small></span></a>
+            <div class="topbar-actions">
+                <button type="button" id="search-open" class="search-open" aria-label="Search documentation"><span class="search-icon" aria-hidden="true"></span><span>Search docs</span><kbd>⌘ K</kbd></button>
+                <button type="button" id="nav-toggle" aria-expanded="false" aria-controls="wiki-nav">Menu</button>
+            </div>
+        </div>
+    </header>
+    <div class="shell">
+        <nav class="sidebar" id="wiki-nav" aria-label="Documentation">
+            <a class="overview" href="index.html"><span aria-hidden="true">⌂</span> Overview</a><h2>Get started</h2><ul><li><a href="installation.html">Install the package</a></li><li><a href="counter.html">Counter walkthrough</a></li></ul><h2>Work with contracts</h2><ul><li><a href="abi.html">ABI and contract calls</a></li><li><a href="bindings.html">Typed Swift bindings</a></li><li><a href="transactions.html">Transactions and wallets</a></li><li><a href="events.html">Events and logs</a></li><li><a href="deployment.html">Deploy a contract</a></li></ul><h2>Reference</h2><ul><li><a href="errors.html">Error handling</a></li><li><a href="testing.html" aria-current="page">Testing and troubleshooting</a></li><li><a href="reference.html">API reference</a></li></ul>
+        </nav>
+        <main id="main-content" class="article" tabindex="-1">
+            <div class="eyebrow">Reference</div><h1>Testing and troubleshooting</h1><p class="intro">Test with a mock transport, run Anvil, and debug integrations.</p><div class="prose"><p>Run the core suite with <code>swift test</code>. For the optional signer, run <code>swift test --package-path LocalWallet</code>. Review the <a href="testing.html#validation-status">validation status</a> for the environments already exercised.</p>
+<p>For deterministic app tests, inject an <code>RPCTransport</code> and return a JSON-RPC response with the request&#x27;s ID. This small transport handles the chain verification call:</p>
+<div class="code-panel"><div class="code-bar"><span>Swift</span><button class="copy" type="button" aria-label="Copy code"><span class="copy-icon" aria-hidden="true"></span><span class="copy-label">Copy</span></button></div><pre tabindex="0"><code><span class="syntax-keyword">import</span> <span class="syntax-type">Foundation</span>
+<span class="syntax-keyword">import</span> <span class="syntax-type">SolidityBridge</span>
+
+<span class="syntax-keyword">struct</span> <span class="syntax-type">TestChainTransport</span>: <span class="syntax-type">RPCTransport</span> {
+    <span class="syntax-keyword">private</span> <span class="syntax-keyword">struct</span> <span class="syntax-type">Request</span>: <span class="syntax-type">Decodable</span> {
+        <span class="syntax-keyword">let</span> id: <span class="syntax-type">String</span>
+        <span class="syntax-keyword">let</span> method: <span class="syntax-type">String</span>
+    }
+
+    <span class="syntax-keyword">private</span> <span class="syntax-keyword">struct</span> <span class="syntax-type">Response</span>: <span class="syntax-type">Encodable</span> {
+        <span class="syntax-keyword">let</span> jsonrpc = <span class="syntax-string">&quot;2.0&quot;</span>
+        <span class="syntax-keyword">let</span> id: <span class="syntax-type">String</span>
+        <span class="syntax-keyword">let</span> result = <span class="syntax-string">&quot;0x7a69&quot;</span>
+    }
+
+    <span class="syntax-keyword">func</span> send(_ payload: <span class="syntax-type">Data</span>) <span class="syntax-keyword">async</span> <span class="syntax-keyword">throws</span> -&gt; <span class="syntax-type">Data</span> {
+        <span class="syntax-keyword">let</span> request = <span class="syntax-keyword">try</span> <span class="syntax-type">JSONDecoder</span>().decode(<span class="syntax-type">Request</span>.<span class="syntax-keyword">self</span>, from: payload)
+        <span class="syntax-keyword">guard</span> request.method == <span class="syntax-string">&quot;eth_chainId&quot;</span> <span class="syntax-keyword">else</span> {
+            <span class="syntax-keyword">throw</span> <span class="syntax-type">SolidityBridgeError</span>.invalidRPCResponse
+        }
+        <span class="syntax-keyword">return</span> <span class="syntax-keyword">try</span> <span class="syntax-type">JSONEncoder</span>().encode(<span class="syntax-type">Response</span>(id: request.id))
+    }
+}</code></pre></div>
+<p>See <a href="examples/ContractTests.swift">ContractTests.swift</a> for examples covering simulations, event backfill, and transaction flow. For the opt-in integration test, start Anvil on its default loopback port, then run:</p>
+<div class="code-panel"><div class="code-bar"><span>Terminal</span><button class="copy" type="button" aria-label="Copy code"><span class="copy-icon" aria-hidden="true"></span><span class="copy-label">Copy</span></button></div><pre tabindex="0"><code>forge build --contracts Examples
+SOLIDITYBRIDGE_ANVIL_ARTIFACT=out/Counter.sol/Counter.json \
+  swift test --filter deployAndUseCounterOnAnvil</code></pre></div>
+<p>The test deploys Counter, sends <code>set(42)</code> using Anvil&#x27;s unlocked development account, compares its receipt event with filtered history, and verifies that simulating <code>set(101)</code> returns <code>TooHigh(uint256)</code>.</p>
+<div class="table-scroll" tabindex="0"><table><thead><tr><th>Symptom</th><th>Check</th></tr></thead><tbody><tr><td>The demo cannot reach a local endpoint</td><td>Make sure Anvil is reachable from the simulator or device and check App Transport Security and local-network settings.</td></tr><tr><td><code>eth_call</code> returns empty or malformed data</td><td>Check the chain, deployed address, ABI version, and whether the selected block contains the contract.</td></tr><tr><td>The provider rejects a history range</td><td>Reduce <code>pageSize</code> and confirm that the provider retains logs at the requested height.</td></tr><tr><td>The provider rejects fee discovery</td><td>Verify support for type-2 transactions and the provider&#x27;s fee methods. You can supply both fee caps on a compatible chain.</td></tr><tr><td>A second write is rejected while a wallet prompt is open</td><td>Wait for the active submission before starting another from the same account.</td></tr><tr><td>A generated method name differs from the ABI name</td><td>Look for a keyword adjustment or an overload suffix in the generated source.</td></tr></tbody></table></div>
+<h2 id="validation-status">Validation status</h2>
+<p>The core tests use a mock RPC transport and Foundry reference vectors. The demo compiled for device and simulator SDKs. The pinned local signing dependency, the app running in Xcode, and complete Anvil and Sepolia integration runs remain to be verified.</p></div><nav class="pager" aria-label="Adjacent topics"><a class="pager-previous" href="errors.html"><span>Previous</span><strong>Error handling</strong></a><a class="pager-next" href="reference.html"><span>Next</span><strong>API reference</strong></a></nav>
+            <footer>SolidityBridge documentation <span>Swift 6 · iOS 16+ · macOS 13+</span></footer>
+        </main>
+        <aside class="outline"><nav aria-label="On this page"><h2>On this page</h2><ul><li><a href="#validation-status">Validation status</a></li></ul></nav></aside>
+    </div>
+    <dialog id="search-dialog" aria-labelledby="search-title">
+        <div class="dialog-header">
+            <h2 id="search-title">Search documentation</h2>
+            <form method="dialog"><button type="submit" aria-label="Close search">Close</button></form>
+        </div>
+        <label class="search-field"><span class="search-icon" aria-hidden="true"></span><input id="search-input" type="search" placeholder="Try wallets, events, or UInt256" autocomplete="off" aria-label="Search documentation"></label>
+        <p id="search-status" class="search-status" aria-live="polite">Browse topics</p>
+        <ul id="search-results" class="search-results"></ul>
+        <div class="dialog-hint">Use <kbd>↑</kbd> <kbd>↓</kbd> to select and <kbd>Enter</kbd> to open.</div>
+    </dialog>
+    <div id="copy-status" class="visually-hidden" role="status"></div>
+</body>
+</html>
