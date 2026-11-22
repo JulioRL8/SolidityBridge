@@ -26,7 +26,19 @@
             <a class="overview" href="index.html"><span aria-hidden="true">⌂</span> Overview</a><h2>Get started</h2><ul><li><a href="installation.html" aria-current="page">Install the package</a></li><li><a href="counter.html">Counter walkthrough</a></li></ul><h2>Work with contracts</h2><ul><li><a href="abi.html">ABI and contract calls</a></li><li><a href="bindings.html">Typed Swift bindings</a></li><li><a href="transactions.html">Transactions and wallets</a></li><li><a href="events.html">Events and logs</a></li><li><a href="deployment.html">Deploy a contract</a></li></ul><h2>Reference</h2><ul><li><a href="errors.html">Error handling</a></li><li><a href="testing.html">Testing and troubleshooting</a></li><li><a href="reference.html">API reference</a></li></ul>
         </nav>
         <main id="main-content" class="article" tabindex="-1">
-            <div class="eyebrow">Get started</div><h1>Install the package</h1><p class="intro">Add SolidityBridge to Xcode and connect to an Ethereum node.</p><div class="prose"><p>The core package targets iOS 16 and macOS 13 with Swift 6. For Xcode, add the package locally and link the <code>SolidityBridge</code> product. In another local Swift package, add <code>.package(path: &quot;../SolidityBridge&quot;)</code> under package dependencies and <code>.product(name: &quot;SolidityBridge&quot;, package: &quot;SolidityBridge&quot;)</code> under target dependencies. Adjust the relative path for your checkout.</p>
+            <div class="eyebrow">Get started</div><h1>Install the package</h1><p class="intro">Add SolidityBridge to Xcode and connect to an Ethereum node.</p><div class="prose"><p>The core package targets iOS 16 and macOS 13 with Swift 6.</p>
+<h2 id="add-the-package-in-xcode">Add the package in Xcode</h2>
+<ul>
+<li>Choose <strong>File → Add Package Dependencies…</strong> and paste <code>https://github.com/JulioRL8/SolidityBridge.git</code> into the search field.</li>
+<li>Set <strong>Dependency Rule</strong> to <strong>Branch</strong> and enter <code>master</code>. The repository does not yet have a version tag.</li>
+<li>Click <strong>Add Package</strong> and select the <code>SolidityBridge</code> product for your app target.</li>
+</ul>
+<h2 id="add-the-package-in-packageswift">Add the package in Package.swift</h2>
+<p>Add this entry to the package-level <code>dependencies</code> array:</p>
+<div class="code-panel"><div class="code-bar"><span>Swift</span><button class="copy" type="button" aria-label="Copy code"><span class="copy-icon" aria-hidden="true"></span><span class="copy-label">Copy</span></button></div><pre tabindex="0"><code>.package(url: <span class="syntax-string">&quot;https://github.com/JulioRL8/SolidityBridge.git&quot;</span>, branch: <span class="syntax-string">&quot;master&quot;</span>)</code></pre></div>
+<p>Add this entry to the target&#x27;s <code>dependencies</code> array:</p>
+<div class="code-panel"><div class="code-bar"><span>Swift</span><button class="copy" type="button" aria-label="Copy code"><span class="copy-icon" aria-hidden="true"></span><span class="copy-label">Copy</span></button></div><pre tabindex="0"><code>.product(name: <span class="syntax-string">&quot;SolidityBridge&quot;</span>, package: <span class="syntax-string">&quot;SolidityBridge&quot;</span>)</code></pre></div>
+<h2 id="configure-the-ethereum-client">Configure the Ethereum client</h2>
 <p>Keep a deployment&#x27;s RPC endpoint, numeric chain ID, address, and ABI together. <code>ContractABI(json:)</code> accepts a bare ABI array and an artifact object with an <code>abi</code> property. Add the JSON to the app target&#x27;s resources or load it from a file in a command-line tool. Load the ABI from the contract version you deployed. <code>EthereumAddress</code> checks the length and validates the checksum on mixed-case input.</p>
 <div class="code-panel"><div class="code-bar"><span>Swift</span><button class="copy" type="button" aria-label="Copy code"><span class="copy-icon" aria-hidden="true"></span><span class="copy-label">Copy</span></button></div><pre tabindex="0"><code><span class="syntax-keyword">import</span> <span class="syntax-type">Foundation</span>
 <span class="syntax-keyword">import</span> <span class="syntax-type">SolidityBridge</span>
@@ -47,7 +59,7 @@
 <p>The default transport sends JSON-RPC over HTTP or HTTPS with Foundation. Use HTTPS for remote endpoints. If you need a custom <code>URLSession</code>, create <code>HTTPTransport(endpoint:headers:session:)</code> yourself and pass it to <code>EthereumClient(chainID:transport:)</code>. You can also supply your own <code>RPCTransport</code>. Call <code>verifyChain()</code> during configuration, especially before your first read or event query. The transaction preparation path verifies the chain itself.</p></div><nav class="pager" aria-label="Adjacent topics"><a class="pager-next" href="counter.html"><span>Next</span><strong>Counter walkthrough</strong></a></nav>
             <footer>SolidityBridge documentation <span>Swift 6 · iOS 16+ · macOS 13+</span></footer>
         </main>
-
+        <aside class="outline"><nav aria-label="On this page"><h2>On this page</h2><ul><li><a href="#add-the-package-in-xcode">Add the package in Xcode</a></li><li><a href="#add-the-package-in-packageswift">Add the package in Package.swift</a></li><li><a href="#configure-the-ethereum-client">Configure the Ethereum client</a></li></ul></nav></aside>
     </div>
     <dialog id="search-dialog" aria-labelledby="search-title">
         <div class="dialog-header">

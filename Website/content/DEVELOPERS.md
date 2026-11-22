@@ -15,7 +15,29 @@
 
 ## Install and configure
 
-The core package targets iOS 16 and macOS 13 with Swift 6. For Xcode, add the package locally and link the `SolidityBridge` product. In another local Swift package, add `.package(path: "../SolidityBridge")` under package dependencies and `.product(name: "SolidityBridge", package: "SolidityBridge")` under target dependencies. Adjust the relative path for your checkout.
+The core package targets iOS 16 and macOS 13 with Swift 6.
+
+### Add the package in Xcode
+
+- Choose **File → Add Package Dependencies…** and paste `https://github.com/JulioRL8/SolidityBridge.git` into the search field.
+- Set **Dependency Rule** to **Branch** and enter `master`. The repository does not yet have a version tag.
+- Click **Add Package** and select the `SolidityBridge` product for your app target.
+
+### Add the package in Package.swift
+
+Add this entry to the package-level `dependencies` array:
+
+```swift
+.package(url: "https://github.com/JulioRL8/SolidityBridge.git", branch: "master")
+```
+
+Add this entry to the target's `dependencies` array:
+
+```swift
+.product(name: "SolidityBridge", package: "SolidityBridge")
+```
+
+### Configure the Ethereum client
 
 Keep a deployment's RPC endpoint, numeric chain ID, address, and ABI together. `ContractABI(json:)` accepts a bare ABI array and an artifact object with an `abi` property. Add the JSON to the app target's resources or load it from a file in a command-line tool. Load the ABI from the contract version you deployed. `EthereumAddress` checks the length and validates the checksum on mixed-case input.
 

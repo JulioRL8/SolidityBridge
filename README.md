@@ -4,9 +4,15 @@ SolidityBridge is a Swift package for working with Ethereum smart contracts from
 
 The core library requires Swift 6, iOS 16 or later, or macOS 13 or later. It uses Foundation and has no third-party package dependencies. The optional local signer requires Swift 6.1.
 
+[Read the SolidityBridge documentation](https://juliorl8.github.io/SolidityBridge/).
+
 ## Install
 
-In Xcode, choose **File → Add Package Dependencies → Add Local…**, select the directory containing `Package.swift`, and add the `SolidityBridge` product to your app target. Add the contract ABI or a compiled artifact containing `abi` to your app resources.
+1. In Xcode, choose **File → Add Package Dependencies…** and enter `https://github.com/JulioRL8/SolidityBridge.git`.
+2. Set **Dependency Rule** to **Branch** and enter `master`.
+3. Click **Add Package** and add the `SolidityBridge` product to your app target.
+
+Add the contract ABI or a compiled artifact containing `abi` to your app resources. See the [installation guide](https://juliorl8.github.io/SolidityBridge/installation.html) for SwiftPM manifest setup.
 
 ## Read a contract
 
